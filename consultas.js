@@ -36,5 +36,51 @@ const obtenerJoyas = async ({ limits = 10, page = 1, order_by = 'id_ASC' } = {})
     }
 }
 
-module.exports = { obtenerJoyas }
+const filtrarJoyas = async ({ precio_max, precio_min, categoria, metal }) => {
+    
+    let consulta = 'SELECT * FROM inventario WHERE true'
+    const valores = []
+    let i = 1
+
+    if (precio_max) {
+        consulta += ` AND precio <= $${i}`
+        valores.push(precio_max)
+        i++
+    }
+
+    if (precio_min) {
+        consulta += ` AND precio >= $${i}`
+        valores.push(precio_min)
+        i++
+    }
+
+    if (categoria) {
+        consulta += ` AND categoria = $${i}`
+        valores.push(categoria)
+        i++
+    }
+
+    if (metal) {
+        consulta += ` AND metal = $${i}`
+        valores.push(metal)
+        i++
+    }
+
+    const { rows: joyas } = await pool.query(consulta, valores)
+    return joyas
+}
+
+
+const obtenerJoyaPorId = async (id) => {
+    const { rows: joyas } = await pool.query(
+        'SELECT * FROM inventario WHERE id = $1', 
+        [id]
+    )
+    return joyas[0]
+}
+
+module.exports = { obtenerJoyas, obtenerJoyaPorId, filtrarJoyas }
+
+
+
 
